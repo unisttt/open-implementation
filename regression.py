@@ -10,100 +10,59 @@ def gradient_descent(f, init_x, lr=0.01, step_num=100):
         grad = helper.numerical_gradient(f, x)
         x -= lr * grad
 
-def multivariate_linear_regression(params, xvar, y):
-    lr = 0.1
+def linear_regression(X, y, params):
+    alpha = 0.1
     m = len(y)
-    h = 1e-4
-    grad = np.zeros_like(params)
-    step_num = 1000
-    print(params.size)
-    print(grad)
-    print("-"*20)
-    for i in range(step_num):
-        for idx in range(params.size):
-            tmp_val = params[idx]
-            #for xi in range(xvar)
-            params[idx] = tmp_val + h
-            fxh1 = j_theta2(params, xvar, y)
-            fxh1 = np.sum(fxh1)
-            
-            params[idx] = tmp_val - h
-            fxh2 = j_theta2(params, xvar, y)
-            fxh2 = np.sum(fxh2)
-            grad[idx] = (fxh1 - fxh2) / (2*h)
-            params[idx] = tmp_val
-
-        params -= lr * grad
-        if i < 10:
-            plt.plot(xvar[1], h_theta2(params, xvar), "-", label=str(i))
+    iteration = 100
     
-            print("{}: {}".format(i, params))
-        elif i == 999:
-            plt.plot(xvar[1], h_theta2(params, xvar), label=str(i))
-            print("{}: {}".format(i, params))
+    plt.subplot(121)
+ 
+    ax2 = plt.subplot(1,2,2)
+    ax2.plot(1/2, 19/14, "rx")
 
-    plt.plot(xvar[1], y, 's')
-    plt.plot(xvar[1], h_theta2(params, xvar))
-    plt.legend()
-    plt.xlabel("X")
-    plt.ylabel("Y")
-    plt.show()
-    
-    #print(h_theta2(params, xvar))
-    #X0, X1, X2 = np.meshgrid(xvar[0], xvar[1], xvar[2])
-    
-    #Z = h_theta2(params, np.array([X0, X1, X2]))
-    #print(Z.shape)
-    #fig = plt.figure()  # 2d
-    #ax = Axes3D(fig)    # 3d
-    #ax.set_label('X')
-    #ax.set_label("y")
-    #ax.set_label("f(x, y")
-
-    #ax.plot_wireframe(X1, X2, Z)
-
-def linear_regression(x, y):
-    theta0 = 0
-    theta1 = 0
-    alpha = 1
-    m = len(x)
-    jt = j_theta(theta0, theta1, x, y)
     # GD
-    for i in range(100):
-        for xi, yi in zip(x, y):
-            theta0 = theta0 + alpha * (yi - h_theta(theta0, theta1, xi)) / m
-            theta1 = theta1 + alpha * (yi - h_theta(theta0, theta1, xi)) * xi / m
-            print(theta0)
-            print(theta1)
-        if i % 10 == 0:
-            plt.plot(x, h_theta(theta0, theta1, x), label=str(i+1))
+    for i in range(iteration):
+        predict = h_theta(X, params)
+        cost1 = np.sum(predict - y)
+        cost2 = np.sum((predict - y) * X[:,1])
+        params = params - alpha * (1/m) * np.array([cost1, cost2])
+        if i % (iteration / 10) == 0:
+            #plt.plot(X[1, :], h_theta(X, params), label=str(i+1))
+            continue
+        ax2.plot(params[0], params[1], "s")
+        
 
-    plt.plot(x, y, "s")
-    print(h_theta(theta0, theta1, x))
-    #plt.plot(xi, h_theta(theta0, theta1, xi))
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.grid()
-    plt.legend()
+    ax1 = plt.subplot(1,2,1)
+    ax1.plot(X[:, 1], y, "s")
+    plt.plot(X[:, 1], h_theta(X, params))
+    ax1.set_xlabel("x")
+    ax1.set_ylabel("y")
+    ax1.grid()
+
+    ax2.set_xlabel("theta0")
+    ax2.set_ylabel("theta1")
+    #ax2.legend()
+    
+    
     plt.show()
 
-def j_theta(theta0, theta1, x, y):
-    sigma = 0
-    for xi, yi in zip(x, y):
-        sigma += (yi - h_theta(theta0, theta1, xi))**2     
-
-    return sigma / (2 * len(x))
+def j_theta(X, y, params):
+    predict = h_theta(X, params)
+    sqrerr = (predict - y)**2
+    
+    return (1/2 * len(y)) * sum(sqrerr)
 
 def j_theta2(params, xvar, y):
     sigma = np.sum((y - h_theta2(params, xvar))**2)
     
     return sigma / (2*y.size)
 
-def h_theta(theta0, theta1, xi):
-    return theta0 + theta1 * xi
+def h_theta(X, params):
+    return np.dot(X, params)
 
 def h_theta2(params, xvar):
-    return np.dot(xvar.T, params)
+    dot = np.dot(xvar.T, params)
+    return np.sum(dot)
 
 def main():
     x = np.array([1.0, 2.0, 4.0])
@@ -112,16 +71,17 @@ def main():
     theta1 = 0.0
     theta2 = 0.0
     params = np.array([theta0, theta1])
+    
     x0 = np.array([1.0, 1.0, 1.0])
     x1 = np.array([1.0, 2.0, 4.0])
     x2 = np.array([3.0, 4.0, 6.0])
-    xvar = np.array([x0, x1])
+    X = np.array([x0, x1]).T
     
     params2 = np.array([theta0, theta1, theta2])
     xvar2 = np.array([x0, x1, x2])
 
-    #linear_regression(x, y)
-    multivariate_linear_regression(params, xvar, y)
+    linear_regression(X, y, params)
+    #multivariate_linear_regression(params, xvar, y)
     #multivariate_linear_regression(params2, xvar2, y)
     
 
